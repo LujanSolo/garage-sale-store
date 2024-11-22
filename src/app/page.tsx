@@ -40,25 +40,26 @@ export default function Home() {
   // Add product to cart
   const handleAddToCart = (product: Product) => {
     setCart((prevCart) => {
-      const updatedCart = [...prevCart];
-
-      // Use optional chaining to ensure that item.product exists
-      const existingProduct = updatedCart.find((item) => item?.product?.id === product.id);
-
-      if (existingProduct) {
-        // If product exists, increase quantity (but don't exceed available_count)
-        if (existingProduct.quantity <= product.available_count) {
-          existingProduct.quantity++;
+      const updatedCart = prevCart.map((item) => {
+        if (item.product.id === product.id) {
+          return {
+            ...item,
+            quantity: Math.min(item.quantity + 1, product.available_count),
+          };
         }
-      } else {
-        // If the product doesn't exist, add it to the cart
+        return item;
+      });
+  
+      // Add product if it doesn't exist in the cart
+      if (!updatedCart.some((item) => item.product.id === product.id)) {
         updatedCart.push({ product, quantity: 1 });
       }
-
+  
       localStorage.setItem("cart", JSON.stringify(updatedCart)); // Save cart to localStorage
       return updatedCart;
     });
   };
+  
 
 
 
@@ -76,18 +77,20 @@ export default function Home() {
     setCart((prevCart) => {
       const updatedCart = prevCart.map((item) => {
         if (item.product.id === productId) {
-          const newQuantity = item.quantity + delta;
-          if (newQuantity >= 1 && newQuantity <= item.product.available_count) {
-            item.quantity = newQuantity;
-          }
+          const newQuantity = Math.min(
+            Math.max(item.quantity + delta, 1), // Ensure quantity is >= 1
+            item.product.available_count // Ensure quantity <= available_count
+          );
+          return { ...item, quantity: newQuantity };
         }
         return item;
       });
-
+  
       localStorage.setItem("cart", JSON.stringify(updatedCart)); // Save cart to localStorage
       return updatedCart;
     });
   };
+  
 
   // Handle checkout
   const handleCheckout = async () => {
@@ -95,17 +98,24 @@ export default function Home() {
       console.error("Cart is empty!");
       return;
     }
-
+  
     try {
+      // Transform cart into the expected format
+      const body = {
+        products: cart.map((item) => ({ id: item.product.id, quantity: item.quantity })),
+      };
+  
+      console.log("Cart being sent to checkout:", body);
+  
       const res = await fetch("/api/checkout", {
         method: "POST",
-        body: JSON.stringify({ products: cart }),
+        body: JSON.stringify(body),
         headers: { "Content-Type": "application/json" },
       });
-
+  
       if (res.ok) {
         const { url } = await res.json();
-        window.location.href = url;
+        window.location.href = url; // Redirect to checkout page
       } else {
         const errorResponse = await res.json();
         console.error("Failed to create checkout session:", errorResponse);
@@ -114,6 +124,7 @@ export default function Home() {
       console.error("Request failed:", err);
     }
   };
+  
 
   return (
     <main className="container mx-auto p-4">
@@ -140,12 +151,6 @@ export default function Home() {
                 className="mt-4 bg-green-500 text-white py-2 px-4 rounded"
               >
                 Add to Cart
-              </button>
-              <button
-                onClick={() => handleCheckout()}
-                className="mt-4 bg-blue-500 text-white py-2 px-4 rounded"
-              >
-                Buy Now
               </button>
             </div>
           ))}
