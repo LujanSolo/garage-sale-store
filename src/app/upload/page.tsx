@@ -54,8 +54,9 @@ export default function UploadProduct() {
     <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
       <h1 className="text-2xl font-bold">Upload a Product</h1>
       <div>
-        <label className="block font-medium">Name</label>
+        <label htmlFor="product-name" className="block font-medium">Name</label>
         <input
+          id="product-name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -64,16 +65,18 @@ export default function UploadProduct() {
         />
       </div>
       <div>
-        <label className="block font-medium">Description</label>
+        <label htmlFor="product-desc" className="block font-medium">Description</label>
         <textarea
+          id="product-desc"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="border rounded w-full p-2"
         />
       </div>
       <div>
-        <label className="block font-medium">Price ($)</label>
+        <label htmlFor="product-price" className="block font-medium">Price ($)</label>
         <input
+          id="product-price"
           type="number"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
@@ -82,8 +85,9 @@ export default function UploadProduct() {
         />
       </div>
       <div>
-        <label className="block font-medium">Image</label>
+        <label htmlFor="product-img" className="block font-medium">Image</label>
         <input
+          id="product-img"
           type="file"
           accept="image/*"
           onChange={handleFileChange}
