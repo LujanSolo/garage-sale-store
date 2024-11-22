@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import Image from 'next/image';
 
 type Product = {
   id: number;
@@ -49,17 +50,17 @@ export default function Home() {
         }
         return item;
       });
-  
+
       // Add product if it doesn't exist in the cart
       if (!updatedCart.some((item) => item.product.id === product.id)) {
         updatedCart.push({ product, quantity: 1 });
       }
-  
+
       localStorage.setItem("cart", JSON.stringify(updatedCart)); // Save cart to localStorage
       return updatedCart;
     });
   };
-  
+
 
 
 
@@ -85,12 +86,12 @@ export default function Home() {
         }
         return item;
       });
-  
+
       localStorage.setItem("cart", JSON.stringify(updatedCart)); // Save cart to localStorage
       return updatedCart;
     });
   };
-  
+
 
   // Handle checkout
   const handleCheckout = async () => {
@@ -98,21 +99,21 @@ export default function Home() {
       console.error("Cart is empty!");
       return;
     }
-  
+
     try {
       // Transform cart into the expected format
       const body = {
         products: cart.map((item) => ({ id: item.product.id, quantity: item.quantity })),
       };
-  
+
       console.log("Cart being sent to checkout:", body);
-  
+
       const res = await fetch("/api/checkout", {
         method: "POST",
         body: JSON.stringify(body),
         headers: { "Content-Type": "application/json" },
       });
-  
+
       if (res.ok) {
         const { url } = await res.json();
         window.location.href = url; // Redirect to checkout page
@@ -124,7 +125,7 @@ export default function Home() {
       console.error("Request failed:", err);
     }
   };
-  
+
 
   return (
     <main className="container mx-auto p-4">
@@ -138,10 +139,13 @@ export default function Home() {
               key={product.id}
               className="border rounded p-4 shadow hover:shadow-lg transition"
             >
-              <img
-                src={product.image_url}
+              <Image
+                src={product.image_url} // Image URL from Supabase
                 alt={product.name}
                 className="w-full h-48 object-cover mb-2"
+                width={500}  // Set a fixed width
+                height={200} // Set a fixed height
+                objectFit="cover"  // Similar to 'object-cover' CSS class
               />
               <h2 className="text-xl font-semibold">{product.name}</h2>
               <p className="text-gray-700">{product.description}</p>
